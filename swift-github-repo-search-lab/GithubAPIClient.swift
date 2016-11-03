@@ -56,7 +56,7 @@ class GithubAPIClient {
             }
         }
         task.resume()
-        }
+    }
     
     class func starRepository(named: String , completion: @escaping () -> ()) {
         let urlString = "https://api.github.com/user/starred/\(named)?access_token=\(accessToken)"
