@@ -9,87 +9,104 @@
 import UIKit
 
 class ReposTableViewController: UITableViewController {
+    
+    let store = ReposDataStore.sharedInstance
+    
+    @IBAction func searchButton(_ sender: AnyObject) {
+        
+        let alert = UIAlertController(title: "Search", message: nil, preferredStyle: .alert)
+     
+        alert.addTextField { (textfield) in
+            textfield.placeholder = "Search Repositories"
+       
+        }
 
+        
+        let search = UIAlertAction(title: "Search", style: .default) { (complete) in
+            
+            
+           self.store.searchRepositories(name: (alert.textFields?[0].text)!, completion: {
+          
+            OperationQueue.main.addOperation {
+                self.tableView.reloadData()
+
+            }
+            
+           })
+            
+           
+        }
+        
+        alert.addAction(search)
+        
+        present(alert, animated: true, completion: nil)
+    
+    }
+   
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        
+        self.tableView.accessibilityLabel = "tableView"
+        self.tableView.accessibilityIdentifier = "tableView"
+     
+//        store.searchRepositories(name: "mojo") { 
+//            OperationQueue.main.addOperation({
+//                self.tableView.reloadData()
+//        })
+        
+        store.getRepositoriesWithCompletion {
+            OperationQueue.main.addOperation({
+                self.tableView.reloadData()
+            })
+        }
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
+    
     // MARK: - Table view data source
-
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
-        return 0
-    }
-
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
-        return 0
+        return self.store.repositories.count
     }
-
-    /*
+    
+    func someFunction(success: Bool) {
+        
+    }
+    
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
-
-        // Configure the cell...
-
+        let cell = tableView.dequeueReusableCell(withIdentifier: "repoCell", for: indexPath)
+        
+        let repository: GithubRepository = self.store.repositories[(indexPath as NSIndexPath).row]
+        cell.textLabel?.text = repository.fullName
+        
         return cell
     }
-    */
-
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let repo = store.repositories[indexPath.row]
+        let repoName = repo.fullName
+        
+        ReposDataStore.toggleStarStatus(for: repo) { (isStarred) in
+            
+            switch isStarred {
+            case true:
+                let alertController = UIAlertController(title: "Starred!", message: "You have just starred \(repoName)", preferredStyle: .alert)
+                let defaultAction = UIAlertAction(title: "Dismiss", style: .default, handler: nil)
+                alertController.addAction(defaultAction)
+                
+                self.present(alertController, animated: true, completion: nil)
+                
+            case false:
+                let alertController = UIAlertController(title: "Unstar!", message: "You have unstarred this \(repoName)", preferredStyle: .alert)
+                let defaultAction = UIAlertAction(title: "Dismiss", style: .default, handler: nil)
+                alertController.addAction(defaultAction)
+                
+                self.present(alertController, animated: true, completion: nil)
+            default: "Default"
+                
+            }
+            
+        }
+        
     }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
